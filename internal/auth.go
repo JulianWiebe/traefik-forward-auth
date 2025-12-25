@@ -18,7 +18,7 @@ import (
 // Request Validation
 
 // ValidateCookie verifies that a cookie matches the expected format of:
-// Cookie = hash(secret, cookie domain, email, expires)|expires|email
+// Cookie = hash(secret, cookie domain, roles, expires)|expires|roles
 func ValidateCookie(r *http.Request, c *http.Cookie) (string, error) {
 	parts := strings.Split(c.Value, "|")
 
@@ -59,7 +59,7 @@ func ValidateCookie(r *http.Request, c *http.Cookie) (string, error) {
 // ValidateEmail checks if the given email address matches either a whitelisted
 // email address, as defined by the "whitelist" config parameter. Or is part of
 // a permitted domain, as defined by the "domains" config parameter
-func ValidateEmail(email, ruleName string) bool {
+func ValidateRoles(roles, ruleName string) bool {
 	// Use global config by default
 	whitelist := config.Whitelist
 	domains := config.Domains
@@ -77,10 +77,12 @@ func ValidateEmail(email, ruleName string) bool {
 		return true
 	}
 
-	// Email whitelist validation
+	// Role whitelist validation
 	if len(whitelist) > 0 {
-		if ValidateWhitelist(email, whitelist) {
-			return true
+		for _, role := range strings.Split(roles, ",") {
+			if ValidateWhitelist(role, whitelist) {
+				return true
+			}
 		}
 
 		// If we're not matching *either*, stop here
@@ -89,32 +91,13 @@ func ValidateEmail(email, ruleName string) bool {
 		}
 	}
 
-	// Domain validation
-	if len(domains) > 0 && ValidateDomains(email, domains) {
-		return true
-	}
-
 	return false
 }
 
-// ValidateWhitelist checks if the email is in whitelist
-func ValidateWhitelist(email string, whitelist CommaSeparatedList) bool {
+// ValidateWhitelist checks if the role is in whitelist
+func ValidateWhitelist(role string, whitelist CommaSeparatedList) bool {
 	for _, whitelist := range whitelist {
-		if email == whitelist {
-			return true
-		}
-	}
-	return false
-}
-
-// ValidateDomains checks if the email matches a whitelisted domain
-func ValidateDomains(email string, domains CommaSeparatedList) bool {
-	parts := strings.Split(email, "@")
-	if len(parts) < 2 {
-		return false
-	}
-	for _, domain := range domains {
-		if domain == parts[1] {
+		if role == whitelist {
 			return true
 		}
 	}
@@ -162,10 +145,12 @@ func useAuthDomain(r *http.Request) (bool, string) {
 // Cookie methods
 
 // MakeCookie creates an auth cookie
-func MakeCookie(r *http.Request, email string) *http.Cookie {
+func MakeCookie(r *http.Request, roles []string) *http.Cookie {
+	strRoles := strings.Join(roles, ",")
+
 	expires := cookieExpiry()
-	mac := cookieSignature(r, email, fmt.Sprintf("%d", expires.Unix()))
-	value := fmt.Sprintf("%s|%d|%s", mac, expires.Unix(), email)
+	mac := cookieSignature(r, strRoles, fmt.Sprintf("%d", expires.Unix()))
+	value := fmt.Sprintf("%s|%d|%s", mac, expires.Unix(), strRoles)
 
 	return &http.Cookie{
 		Name:     config.CookieName,

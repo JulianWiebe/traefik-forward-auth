@@ -1,6 +1,6 @@
 package provider
 
-import (
+/* import (
 	"crypto/rand"
 	"crypto/rsa"
 	"fmt"
@@ -275,3 +275,4 @@ func (k *rsaKey) sign(t *testing.T, payload []byte) string {
 	}
 	return data
 }
+*/

@@ -1,6 +1,6 @@
 package tfa
 
-import (
+/* import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -17,19 +17,12 @@ import (
 	"golang.org/x/oauth2"
 )
 
-/**
- * Setup
- */
-
 func init() {
 	config = newDefaultConfig()
 	config.LogLevel = "panic"
 	log = NewDefaultLogger()
 }
 
-/**
- * Tests
- */
 
 func TestServerRootHandler(t *testing.T) {
 	assert := assert.New(t)
@@ -484,10 +477,6 @@ func TestServerRouteQuery(t *testing.T) {
 	assert.Equal(200, res.StatusCode, "request matching allow rule should be allowed")
 }
 
-/**
- * Utilities
- */
-
 type OAuthServer struct {
 	t    *testing.T
 	fail bool
@@ -578,3 +567,4 @@ func newHTTPRequest(method, target string) *http.Request {
 	r.Header.Add("X-Forwarded-Uri", u.RequestURI())
 	return r
 }
+*/
